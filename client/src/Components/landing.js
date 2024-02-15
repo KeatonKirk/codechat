@@ -6,11 +6,14 @@ import 'react-chat-elements/dist/main.css';
 
 function LandingPage(props){
     const [url, setUrl] = useState('')
+    const [isValid, setIsValid] = useState(true)
 
     function onChange(e){
         e.preventDefault()
-
-        setUrl(e.target.value)
+        const value = e.target.value
+        const regex = /^https:\/\/github\.com\/[a-zA-Z0-9]+\/[a-zA-Z0-9_.-]+$/;
+        setIsValid(regex.test(value))
+        setUrl(value)
     }
 
     async function onClick(){
@@ -34,6 +37,20 @@ function LandingPage(props){
     }
     return (
         <div className="input-container">
+
+            {!isValid ? (
+
+                <TextField
+                error
+                id="outlined-basic-emai"
+                label="enter a repo URL"
+                fullWidth
+                className="input-field"
+                helperText = "Please enter the root URL for a public Repo."
+                onChange={onChange}
+                />
+            ) : (
+            <>
             <TextField
                 id="outlined-basic-emai"
                 label="enter a repo URL"
@@ -44,6 +61,9 @@ function LandingPage(props){
             <Button onClick={onClick} variant="contained" color="primary" className="send-button">
                 Send
             </Button>
+            </>
+            )
+            }
         </div>
     )
 }

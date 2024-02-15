@@ -2,11 +2,11 @@ import OpenAI from 'openai'
 
 const openai = new OpenAI()
 
-const createAssistant = async () => {
+const createAssistant = async (inputFile) => {
 
     // Upload a file with an "assistants" purpose
     const file = await openai.files.create({
-        file: fs.createReadStream('/serverjson_temp/repoContents.json'),
+        file: inputFile,
         purpose: "assistants",
     });
 
