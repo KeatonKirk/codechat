@@ -34,8 +34,8 @@ app.post('/create', async (req, res) => {
     try {
         const codeFile = await getFile(url)
         console.log('got codefile')
-        await setUpAgent(codeFile, url)
-        res.json(url)
+       const assistant = await setUpAgent(codeFile, url)
+        res.json(assistant.id)
     } catch (error) {
         console.log('error:', error)
         res.status(400).json('something went wrong')

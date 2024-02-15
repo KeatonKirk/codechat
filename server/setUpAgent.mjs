@@ -30,6 +30,7 @@ export async function setUpAgent (inputFile, url) {
             file_ids: [file.id]
             });
         console.log('assistant created', assistant)
+        return assistant
         // TO DO remove the file from storage and maybe add to a database.
         // - could maybe store it directly as JSON and then be able to grab parts of it
         // - maybe also store the assistant id?
@@ -38,6 +39,7 @@ export async function setUpAgent (inputFile, url) {
         throw error
     } finally {
         fs.unlinkSync(tempFilePath)
+        console.log('successfully deleted file')
     }
 
 }

@@ -11,7 +11,7 @@ function LandingPage(props){
     function onChange(e){
         e.preventDefault()
         const value = e.target.value
-        const regex = /^https:\/\/github\.com\/[a-zA-Z0-9]+\/[a-zA-Z0-9_.-]+$/;
+        const regex = /^https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
         setIsValid(regex.test(value))
         setUrl(value)
     }

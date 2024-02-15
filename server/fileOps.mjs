@@ -14,7 +14,7 @@ const s3 = new AWS.S3();
 export async function fileExists(repoUrl){
     // checks if the file exists
     console.log('in fileOps/fileExists')
-    const encodedUrl = encodeURIComponent(repoUrl)
+    const encodedUrl = encodeURIComponent(repoUrl) + '.json'
     const params = {
         Bucket: 'keatons-test-bucket',
         Key: encodedUrl
@@ -37,7 +37,7 @@ export async function fileExists(repoUrl){
 
 export async function uploadCodeFile(file, url){
     // upload file logic here
-    const encodedUrl = encodeURIComponent(url)
+    const encodedUrl = encodeURIComponent(url) + '.json'
     const params = {
         Bucket: 'keatons-test-bucket',
         Key: encodedUrl,

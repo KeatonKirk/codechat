@@ -3,7 +3,7 @@ dotenv.config()
 import axios from 'axios'
 import {fileExists, uploadCodeFile} from './fileOps.mjs'
 const ignoreFiles = ['package-lock.json']
-const ignoreTypes = ['png', 'svg', 'ico']
+const ignoreTypes = ['png', 'svg', 'ico', 'jpg', 'jpeg', 'gif', 'zip', 'rar', '7z', 'mp3', 'wav', 'mp4', 'avi', 'pdf', 'doc', 'git', 'svn', 'jar', 'ipynb', 'sh']
 
 
 const getFileContents = async (url) => {
@@ -23,7 +23,6 @@ const searchRepo = async (repoUrl, path='') => {
     // recursive function which calls itself when it encounters a directory.
     console.log('attempting repo search!', repoUrl + path)
     const token = process.env.GITHUB_TOKEN
-    console.log({token})
     let levelData = await axios.get(repoUrl + path, {
         headers: {
             'Authorization': `token ${token}`
