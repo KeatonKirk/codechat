@@ -4,9 +4,9 @@ import express from 'express'
 import cors from 'cors'
 import fs from 'fs'
 // Module imports
-import searchRepo from './getCode.mjs';
+import {getFile} from './codeOps.mjs';
 import {fileExists, uploadCodeFile} from './fileOps.mjs'
-
+import {setUpAgent} from './setUpAgent.mjs'
 const githubToken = process.env.GITHUB_TOKEN
 const app = express()
 
@@ -22,24 +22,22 @@ app.use(cors())
 app.post('/create', async (req, res) => {
     console.log("request body:", req.body.url) 
     const url = req.body.url 
-    try {
-        console.log('attempting try')
+    /* TO DO
+        I'd like for this create function to basically look like
+            get code stuff
+            set up agent
+            return response
+        and then let the client set up separate requests for threads and messages and such.
+        this endpoint should just get the ball rolling - initiate the agent process 
 
-        const codeFile = await fileExists(url)
-        console.log('got back file exists check')
-        if (codeFile){
-            console.log('found code file!')
-            // then set up assistant
-        } else {
-            console.log('couldnt find file')
-            const [userName, repoName] = url.replace('https://github.com/', '').split('/')
-            const urlString = `https://api.github.com/repos/${userName}/${repoName}/contents/`
-            const file = await searchRepo(urlString) // only need to do this if file doesn't already exist in s3
-            await uploadCodeFile(file, url)
-        }
-        res.json('got the code, nice!')
+    */
+    try {
+        const codeFile = await getFile(url)
+        console.log('got codefile')
+        await setUpAgent(codeFile, url)
+        res.json(url)
     } catch (error) {
-        console.log('error:', error.response.data)
+        console.log('error:', error)
         res.status(400).json('something went wrong')
     }
 })

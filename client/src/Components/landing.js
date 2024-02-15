@@ -24,16 +24,25 @@ function LandingPage(props){
         const body = {
             url: url
         }
-        const response = await fetch('http://localhost:5000/create', {
-                method: "POST",
-                mode: 'cors',
-                headers: {
-                    "Content-Type": 'application/json'
-                },
-                body: JSON.stringify(body)
-            })
-        const responseData = await response.json()
-        console.log({responseData})
+        try {
+            const response = await fetch('http://localhost:5000/create', {
+                    method: "POST",
+                    mode: 'cors',
+                    headers: {
+                        "Content-Type": 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
+
+            if (!response.ok){
+                throw new Error('error in fetch request')
+            }
+            const responseData = await response.json()
+            props.setCurrUrl(responseData)
+            console.log({responseData})
+        } catch(error){
+            console.log('got to error:', error)
+        }
     }
     return (
         <div className="input-container">
@@ -59,7 +68,7 @@ function LandingPage(props){
                 onChange={onChange}
             />
             <Button onClick={onClick} variant="contained" color="primary" className="send-button">
-                Send
+                Submit
             </Button>
             </>
             )
