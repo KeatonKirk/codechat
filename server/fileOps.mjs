@@ -5,24 +5,29 @@ import AWS from 'aws-sdk';
 
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.enve.AWS_SECRET_ACCESS_KEY,
-    region: 'us-west' // or whatever the region is
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: 'us-west-2' // or whatever the region is
 })
 
 const s3 = new AWS.S3();
 
 export async function fileExists(repoUrl){
-
+    // checks if the file exists
+    console.log('in fileOps/fileExists')
+    const encodedUrl = encodeURIComponent(repoUrl)
     const params = {
         Bucket: 'keatons-test-bucket',
-        Key: repoUrl
+        Key: encodedUrl
     };
 
     try {
         await s3.headObject(params).promise()
-        return true;
+        const objectData = await s3.getObject(params).promise()
+        console.log('found file')
+        return objectData; // return the file instead
     } catch (err) {
         if (err.code === 'NotFound') {
+            console.log('file not found')
             return false;
         }
         console.error('Error occurred while checking for file:', err)
@@ -30,20 +35,18 @@ export async function fileExists(repoUrl){
     }
 }
 
-export async function getFile(repoUrl){
-    // return the JSON file from AWS
-}
-
-export async function uploadCodeFile(file){
+export async function uploadCodeFile(file, url){
     // upload file logic here
+    const encodedUrl = encodeURIComponent(url)
     const params = {
         Bucket: 'keatons-test-bucket',
-        Key: 'filename',
-        Body: file
+        Key: encodedUrl,
+        Body: JSON.stringify(file),
+        ContentType: 'application/json'
     }
 
     try {
-        const data = await s3.upload(params).promise()
+        await s3.upload(params).promise()
         console.log('successfully uploaded file')
     } catch (err) {
         console.error('error uploading file:', err)

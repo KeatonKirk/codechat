@@ -2,10 +2,10 @@ import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express'
 import cors from 'cors'
-
+import fs from 'fs'
 // Module imports
 import searchRepo from './getCode.mjs';
-import {fileExists, uploadCodeFile, getFile} from './fileOps.mjs'
+import {fileExists, uploadCodeFile} from './fileOps.mjs'
 
 const githubToken = process.env.GITHUB_TOKEN
 const app = express()
@@ -20,23 +20,27 @@ app.use(cors())
 // const repoUrl = "https://api.github.com/repos/KeatonKirk/d-stor/contents/" // for testing
 
 app.post('/create', async (req, res) => {
-    console.log("request body:", req.body) // need to get the URL from here
-    const url = req.body.url // or something like this
-
+    console.log("request body:", req.body.url) 
+    const url = req.body.url 
     try {
-        const fileExists = await fileExists(url)
-        if (fileExists){
-            const file = await getFile(url)
+        console.log('attempting try')
+
+        const codeFile = await fileExists(url)
+        console.log('got back file exists check')
+        if (codeFile){
+            console.log('found code file!')
             // then set up assistant
         } else {
+            console.log('couldnt find file')
             const [userName, repoName] = url.replace('https://github.com/', '').split('/')
             const urlString = `https://api.github.com/repos/${userName}/${repoName}/contents/`
             const file = await searchRepo(urlString) // only need to do this if file doesn't already exist in s3
-            await uploadCodeFile(file)
+            await uploadCodeFile(file, url)
         }
-        res.send('got the code, nice!')
-    } catch {
-        res.status(400).send('something went wrong')
+        res.json('got the code, nice!')
+    } catch (error) {
+        console.log('error:', error.response.data)
+        res.status(400).json('something went wrong')
     }
 })
 
