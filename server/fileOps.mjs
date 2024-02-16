@@ -35,14 +35,17 @@ export async function fileExists(repoUrl){
     }
 }
 
-export async function uploadCodeFile(file, url){
+export async function uploadCodeFile(file, url, assistantId){
     // upload file logic here
     const encodedUrl = encodeURIComponent(url) + '.json'
     const params = {
         Bucket: 'keatons-test-bucket',
         Key: encodedUrl,
         Body: JSON.stringify(file),
-        ContentType: 'application/json'
+        ContentType: 'application/json',
+        Metadata: {
+            'assistant_id': assistantId
+        }
     }
 
     try {

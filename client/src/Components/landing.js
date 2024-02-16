@@ -25,8 +25,9 @@ function LandingPage(props){
             url: url
         }
         try {
-            const response = await fetch('http://localhost:5000/create', {
+            const response = await fetch('http://localhost:5000/create-session', {
                     method: "POST",
+                    credentials: 'include',
                     mode: 'cors',
                     headers: {
                         "Content-Type": 'application/json'
@@ -38,10 +39,11 @@ function LandingPage(props){
                 throw new Error('error in fetch request')
             }
             const responseData = await response.json()
-            props.setCurrUrl(responseData)
             console.log({responseData})
+            props.setMessages(responseData)
+            props.setSession(true)
         } catch(error){
-            console.log('got to error:', error)
+            console.log('repo input error:', error)
         }
     }
     return (

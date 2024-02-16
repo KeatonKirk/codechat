@@ -67,22 +67,18 @@ const searchRepo = async (repoUrl, path='') => {
     return output
 }
 
-export async function getFile(url){
+export async function getCode(url){
     try {
         const codeFile = await fileExists(url)
         if (codeFile){
             const objectContent = codeFile.Body.toString('utf-8'); // Convert buffer to string
             const jsonObject = JSON.parse(objectContent); // Parse the string as JSON
-            console.log('found code file!')
             return jsonObject
-            // then set up assistant
         } else {
-            console.log('couldnt find file')
             const [userName, repoName] = url.replace('https://github.com/', '').split('/')
             const urlString = `https://api.github.com/repos/${userName}/${repoName}/contents/`
-            const file = await searchRepo(urlString) // only need to do this if file doesn't already exist in s3
-            await uploadCodeFile(file, url)
-            return file
+            const code = await searchRepo(urlString) // only need to do this if file doesn't already exist in s3
+            return code
         }
     } catch (error) {
         console.log('error:', error)

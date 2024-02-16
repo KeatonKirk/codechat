@@ -2,80 +2,111 @@ import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express'
 import cors from 'cors'
-import fs from 'fs'
+import {randomBytes} from 'crypto'
+import redis from 'redis'
 // Module imports
-import {getFile} from './codeOps.mjs';
+import {getCode} from './codeOps.mjs';
 import {fileExists, uploadCodeFile} from './fileOps.mjs'
-import {setUpAgent} from './setUpAgent.mjs'
-const githubToken = process.env.GITHUB_TOKEN
+import {setUpAgent, listMessages, createThread, addMessage} from './agentOps.mjs'
+
 const app = express()
+const redisClient = redis.createClient()
+redisClient.on('error', (err)=> console.log('redis error:', err))
+
+const connectRedis = async () => {
+    try {
+        await redisClient.connect();
+        console.log('connected to redis')
+    } catch(error){
+        console.log(error)
+        process.exit(1)
+    }
+}
 
 const PORT = process.env.PORT || 5000
-app.listen(PORT, () => {
-    console.log('listening on port', PORT)
-})
+
+const startServer = async () => {
+    await connectRedis();
+    app.listen(PORT, () => {
+        console.log('listening on port', PORT)
+    })
+    
+}
+
+const getSessionInfo = async (req) => {
+    if (!req.headers.cookie) return false
+    const cookieString = req.headers.cookie 
+    const sessionId = cookieString.replace('sessionId=', '')
+    const sessionExists = await redisClient.exists(sessionId)
+    if (!sessionExists) return false
+    console.log('sesh id:', sessionId)
+    const sessionInfoString = await redisClient.get(sessionId)
+    const sessionInfo = JSON.parse(sessionInfoString)
+    return sessionInfo
+}
 app.use(express.json())
-app.use(cors())
 
-// const repoUrl = "https://api.github.com/repos/KeatonKirk/d-stor/contents/" // for testing
+const corsOptions = {
+    origin: 'http://localhost:3000', // Replace with the URL of your frontend application
+    credentials: true, // This allows cookies and credentials to be included in cross-origin requests
+  };
 
-app.post('/create', async (req, res) => {
+app.use(cors(corsOptions))
+
+startServer().catch(err => {
+    console.log('error starting the server:', err)
+})
+
+// should only be called from the landing page i.e. we don't know what repo user wants to work with.
+app.post('/create-session', async (req, res) => {
     console.log("request body:", req.body.url) 
     const url = req.body.url 
-    /* TO DO
-        I'd like for this create function to basically look like
-            get code stuff
-            set up agent
-            return response
-        and then let the client set up separate requests for threads and messages and such.
-        this endpoint should just get the ball rolling - initiate the agent process 
-
-    */
     try {
-        const codeFile = await getFile(url)
-        console.log('got codefile')
-       const assistant = await setUpAgent(codeFile, url)
-        res.json(assistant.id)
+        const codeObject = await getCode(url) // this will return the code as a json object in memory
+        const assistant = await setUpAgent(codeObject, url)
+        const thread = await createThread()
+        const messages = await listMessages(thread.id)
+        const sessionId = randomBytes(32).toString('hex')
+        const sessionData = {
+            assistant_id: assistant.id,
+            thread_id: thread.id
+        }
+        redisClient.set(sessionId, JSON.stringify(sessionData), { EX: 86400 })
+        console.log('set redis session info')
+        console.log('got messages:', messages)
+        res.cookie('sessionId', sessionId, { httpOnly: true, secure: true, sameSite: 'Strict' });
+        res.json(messages)
     } catch (error) {
         console.log('error:', error)
         res.status(400).json('something went wrong')
     }
 })
 
-const createThread = async (assistantId) => {
-    // TO DO add create thread logic.
-}
+app.get('/check-session', async (req, res) => {
+    console.log('check session:', req.headers.cookie)
+    // const cookieString = req.headers.cookie 
+    // const sessionId = cookieString.replace('sessionId=', '')
+    // console.log('sesh id:', sessionId)
+    // const sessionInfoString = await redisClient.get(sessionId)
+    const sessionInfo = await getSessionInfo(req)
+    console.log('check session info check:', sessionInfo)
+    if (!sessionInfo){
+        console.log('got to error case')
+        res.status(400).json('no session found')
+    } else {
+        console.log('assistantId:', sessionInfo.assistant_id, 'thread id:', sessionInfo.thread_id)
+        const messages = await listMessages(sessionInfo.thread_id)
+        console.log(messages.data)
+        res.json(messages)
+    }
 
-const addMessage = async (threadId) => {
-    // TO DO add message logic.
-}
-
-
-app.get('/repo', async (req, res) => {
-    await getCode.writeFile(req.body) // or something
-    res.send('Request Successful')
 })
 
+app.post('/send-message', async (req, res) => {
+    console.log('message from client:', req.body.message)
+    const sessionInfo = await getSessionInfo(req)
+    console.log({sessionInfo})
+    const newMessages = await addMessage(req.body.message,sessionInfo.assistant_id, sessionInfo.thread_id)
+    res.json(newMessages)
+})
 
-// TO DO Refactor to best practice node/express setup.
-// const main = async () => {
-//    await getCode.writeFile(repoUrl)
-//    //app.close()
-// }
-
-
-// try {
-//     main()
-// } catch (error) {
-//     if (error.response) {
-//         // request was made, server responded with status code.
-//         console.error("request made, error stats:", error.response.status)
-//         console.error("error data:", error.response.data)
-//     } else if (error.request) {
-//         // request was made but no response received
-//         console.error("request was made but received no response:") // TO DO add error message
-//     } else {
-//         // some other kind of error
-//         console.error("something went wrong:") // TO DO add error message
-//     }
-// }
