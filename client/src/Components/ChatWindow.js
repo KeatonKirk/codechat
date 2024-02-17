@@ -50,10 +50,12 @@ function ChatWindow(props) {
                 {
                     props.messages.map((msg, index) => {
                         const messageText = msg.content[0].text.value
-                        console.log('chat window, individual msg:', msg.content[0].text)
-                        const position = msg.role === 'user' ? 'right' : 'left'
+                        //console.log('chat window, individual msg:', msg.content[0].text)
+                        const position = msg.role === 'user' ? 'right' : 'left';
+                        const title = msg.role === 'user' ? 'you' : 'CodeChat'
                         return(
                             <MessageBox
+                            title ={title}
                             key={index}
                             position={position}
                             type={'text'}

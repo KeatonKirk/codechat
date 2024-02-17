@@ -69,13 +69,14 @@ app.post('/create-session', async (req, res) => {
         const sessionId = randomBytes(32).toString('hex')
         const sessionData = {
             assistant_id: assistant.id,
-            thread_id: thread.id
+            thread_id: thread.id,
+            display_url: url
         }
         redisClient.set(sessionId, JSON.stringify(sessionData), { EX: 86400 })
         console.log('set redis session info')
         console.log('got messages:', messages)
         res.cookie('sessionId', sessionId, { httpOnly: true, secure: true, sameSite: 'Strict' });
-        res.json(messages)
+        res.json({messages: messages, url: url})
     } catch (error) {
         console.log('error:', error)
         res.status(400).json('something went wrong')
@@ -84,20 +85,17 @@ app.post('/create-session', async (req, res) => {
 
 app.get('/check-session', async (req, res) => {
     console.log('check session:', req.headers.cookie)
-    // const cookieString = req.headers.cookie 
-    // const sessionId = cookieString.replace('sessionId=', '')
-    // console.log('sesh id:', sessionId)
-    // const sessionInfoString = await redisClient.get(sessionId)
     const sessionInfo = await getSessionInfo(req)
     console.log('check session info check:', sessionInfo)
     if (!sessionInfo){
-        console.log('got to error case')
-        res.status(400).json('no session found')
+        console.log('no matching session found')
+        res.status(400, 'no session found')
     } else {
         console.log('assistantId:', sessionInfo.assistant_id, 'thread id:', sessionInfo.thread_id)
         const messages = await listMessages(sessionInfo.thread_id)
+        const url =  sessionInfo.display_url
         console.log(messages.data)
-        res.json(messages)
+        res.json({messages: messages, url: url})
     }
 
 })

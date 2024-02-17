@@ -50,8 +50,7 @@ export async function setUpAgent (codeObject, url) {
             console.log('file created')
     
             const assistant = await openai.beta.assistants.create({
-                description: "Experienced software engineer that will help provide engineering best practices and specific code instructions based on a provided json object representing a codebase.",
-                instructions: "You are a senior engineer with deep expertise on the code base represented in the attached file. Your primary goal is to provide specific answers about the codebase in the attached file. The code is represented as a .json file. Always perform knowledge retrieval and reference the document in your knowledge base as opposed to providing general answers",
+                instructions: "In your retrieval fils there is a .json file which contains a json object representing a codebase. You will use the attached .json file to answer all specific questions, and you should assume that all questions are related to the codebase represented as the attached json file. Always assume you should perform the retrieval task and search through the attached .json file. You should expect questions about how to make changes to the code, how to debug the code, specific files and directories where specific code and be found, and how to explain the codes functionality and purpose. Ask clarifying questions if needed, and play the role of an experienced software engineer who is an expert on the provided codebase. Do not specifically reference how the code has been made available, converse as if you are simply a senior engineer who is an expert on the codebase. Any time you reference specific code snippets, use the json file to find the path to the code from root.",
                 model: "gpt-4-1106-preview",
                 tools: [{"type": "retrieval"}],
                 file_ids: [file.id]
@@ -59,9 +58,6 @@ export async function setUpAgent (codeObject, url) {
             console.log('assistant created', assistant)
             uploadCodeFile(codeObject, url, assistant.id)
             return assistant
-            // TO DO remove the file from storage and maybe add to a database.
-            // - could maybe store it directly as JSON and then be able to grab parts of it
-            // - maybe also store the assistant id?
         } catch(error) {
             console.log(error)
             throw error
@@ -119,7 +115,7 @@ async function checkRun(threadId, runId){
             throw new Error('run failed')
         } else {
             console.log('run still working, status:', run.status)
-            await new Promise(resolve => setTimeout(resolve, 3000))
+            await new Promise(resolve => setTimeout(resolve, 8000))
             return checkRun(threadId, runId)
         }
     } catch (error){

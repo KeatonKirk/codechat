@@ -40,12 +40,13 @@ function LandingPage(props){
             }
             const responseData = await response.json()
             console.log({responseData})
-            props.setMessages(responseData)
+            props.setMessages(responseData.messages)
             props.setSession(true)
         } catch(error){
             console.log('repo input error:', error)
         }
     }
+    console.log(props.url)
     return (
         <div className="input-container">
 
@@ -64,7 +65,7 @@ function LandingPage(props){
             <>
             <TextField
                 id="outlined-basic-emai"
-                label="enter a repo URL"
+                label={props.url ? 'try a different repo!' : 'enter a repo url'}
                 fullWidth
                 className="input-field"
                 onChange={onChange}

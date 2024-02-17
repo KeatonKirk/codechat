@@ -6,9 +6,10 @@ import Landing from './Components/Landing.js'
 function App() {
   const [messages, setMessages] = useState([])
   const [session, setSession] = useState(null)
-
-
-
+  const [url, setUrl] = useState('')
+  const [userName, setUserName] = useState('')
+  const [repoName, setRepoName] = useState('')
+  
   useEffect(()=> {
     
     const checkSession = async () => {
@@ -23,28 +24,32 @@ function App() {
     })
   
     if (response.ok){
+      const [userName, repoName] = url.replace('https://github.com/', '').split('/')
       const responseData = await response.json()
       console.log({responseData})
       setSession(true)
-      setMessages(responseData)
+      setMessages(responseData.messages)
+      setUrl(responseData.url)
+      setUserName(userName)
+      setRepoName(repoName)
     } else {
       setSession(false)
     }
     return response.ok
   }
   checkSession()
-  console.log('app root, messages:', messages)
-  }, []);
+  }, [url]);
 
 
   return (
     <div>
-      {session ? (
+      <Landing url={url} setSession={setSession} setMessages={setMessages}/>
+      {session && 
+        <div>
+          <h2>Working on {repoName} by {userName}</h2>
           <ChatWindow setMessages={setMessages} messages={messages}/>
-        ) : (
-          <Landing setSession={setSession} setMessages={setMessages}/>
-        )
-      }
+        </div>
+        }
     </div>
   );
 }

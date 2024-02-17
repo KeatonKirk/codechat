@@ -1,6 +1,7 @@
 .chat-window {
     max-width: 75%;
-    margin: 0 auto
+    margin: 0 auto;
+    padding-top: 20px;
 }
 
 .chat-body {
