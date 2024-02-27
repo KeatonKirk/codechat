@@ -1,17 +1,17 @@
 import dotenv from 'dotenv'
-dotenv.config()
+
 import express from 'express'
 import cors from 'cors'
 import {randomBytes} from 'crypto'
-import redis from 'redis'
+import redis from 'redis';
 // Module imports
 import {getCode} from './codeOps.mjs';
-import {fileExists, uploadCodeFile} from './fileOps.mjs'
+// import {fileExists, uploadCodeFile} from './fileOps.mjs'
 import {setUpAgent, listMessages, createThread, addMessage} from './agentOps.mjs'
 
-const app = express()
-const redisClient = redis.createClient()
-redisClient.on('error', (err)=> console.log('redis error:', err))
+// const app = express()
+// const redisClient = redis.createClient()
+// redisClient.on('error', (err)=> console.log('redis error:', err))
 
 const connectRedis = async () => {
     try {
@@ -44,18 +44,32 @@ const getSessionInfo = async (req) => {
     const sessionInfo = JSON.parse(sessionInfoString)
     return sessionInfo
 }
+
+const app = express()
+const redisClient = redis.createClient()
+redisClient.on('error', (err)=> console.log('redis error:', err))
 app.use(express.json())
 
 const corsOptions = {
-    origin: 'http://localhost:3000', // Replace with the URL of your frontend application
+    origin: 'http://localhost:3000', // Replace with the URL of frontend application
     credentials: true, // This allows cookies and credentials to be included in cross-origin requests
-  };
+};
 
 app.use(cors(corsOptions))
 
-startServer().catch(err => {
-    console.log('error starting the server:', err)
-})
+
+if (process.env.NODE_ENV !== 'test') {
+    dotenv.config()
+    //const app = express()
+    // const redisClient = redis.createClient()
+    //redisClient.on('error', (err)=> console.log('redis error:', err))
+    //await connectRedis();
+    app.use(express.json())
+    app.use(cors(corsOptions))
+    startServer().catch(err => {
+        console.log('error starting the server:', err)
+    })
+}
 
 // should only be called from the landing page i.e. we don't know what repo user wants to work with.
 app.post('/create-session', async (req, res) => {
@@ -94,7 +108,7 @@ app.get('/check-session', async (req, res) => {
         console.log('assistantId:', sessionInfo.assistant_id, 'thread id:', sessionInfo.thread_id)
         const messages = await listMessages(sessionInfo.thread_id)
         const url =  sessionInfo.display_url
-        console.log(messages.data)
+        console.log("messages, in server main:",messages)
         res.json({messages: messages, url: url})
     }
 
@@ -104,7 +118,11 @@ app.post('/send-message', async (req, res) => {
     console.log('message from client:', req.body.message)
     const sessionInfo = await getSessionInfo(req)
     console.log({sessionInfo})
-    const newMessages = await addMessage(req.body.message,sessionInfo.assistant_id, sessionInfo.thread_id)
+    if (!sessionInfo) {
+        res.send('oops! No session found, please refresh and try again.')
+    }
+    const newMessages = await addMessage(req.body.message, sessionInfo.assistant_id, sessionInfo.thread_id)
     res.json(newMessages)
 })
 
+export default app

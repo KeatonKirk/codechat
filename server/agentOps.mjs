@@ -2,9 +2,12 @@ import OpenAI from 'openai'
 import fs from 'fs'
 import path from 'path'
 import {fileExists, uploadCodeFile} from './fileOps.mjs'
-const openai = new OpenAI()
+let openai = null;
 
 async function agentExists(url){
+    // if (!openai) {
+    //     openai = new OpenAI;
+    // }
     console.log('in agentExists')
     try {
         let object = await fileExists(url) // returns false or the s3 object
@@ -26,6 +29,9 @@ async function agentExists(url){
 }
 
 export async function setUpAgent (codeObject, url) {
+    if (!openai) {
+        openai = new OpenAI;
+    }
     let agent = await agentExists(url)
     let tempFilePath;
     if (agent){ //returns the assistant id if it the agent exists.
@@ -71,6 +77,9 @@ export async function setUpAgent (codeObject, url) {
 }
 
 export async function listMessages(threadId){
+    if (!openai) {
+        openai = new OpenAI;
+    }
     let threadMessages = await openai.beta.threads.messages.list(threadId, {order: 'asc'})
     console.log('messages from list func:', threadMessages)
     return threadMessages.data
@@ -115,7 +124,7 @@ async function checkRun(threadId, runId){
             throw new Error('run failed')
         } else {
             console.log('run still working, status:', run.status)
-            await new Promise(resolve => setTimeout(resolve, 8000))
+            await new Promise(resolve => setTimeout(resolve, 20000))
             return checkRun(threadId, runId)
         }
     } catch (error){

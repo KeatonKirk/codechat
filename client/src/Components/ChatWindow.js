@@ -2,6 +2,8 @@ import React, {useState, useRef, useEffect} from 'react';
 import { ChatItem, MessageBox } from 'react-chat-elements';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import ReactMarkdown from 'react-markdown';
+//import rehypeRaw from 'rehype-raw';
 import 'react-chat-elements/dist/main.css';
 import './chat-mui.css'
 
@@ -36,8 +38,8 @@ function ChatWindow(props) {
 
         const responseData = await response.json()
         console.log('data back from send message attempt:', responseData)
-        props.setMessages(responseData)
         setMessage('')
+        props.setMessages(responseData)
     }
     //console.log('messages from parent:', props.messages)
 
@@ -59,7 +61,10 @@ function ChatWindow(props) {
                             key={index}
                             position={position}
                             type={'text'}
-                            text={messageText}
+                            text={
+                                <ReactMarkdown children={messageText} />
+                            }
+                            margin='10px'
                             />
 
                         )
