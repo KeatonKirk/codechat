@@ -42,10 +42,12 @@ function LandingPage(props){
             console.log({responseData})
             props.setMessages(responseData.messages)
             props.setSession(true)
+            props.setUrl(responseData.url)
         } catch(error){
             console.log('repo input error:', error)
         }
     }
+
     console.log(props.url)
     return (
         <div className="input-container">

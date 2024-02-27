@@ -9,6 +9,7 @@ function App() {
   const [url, setUrl] = useState('')
   const [userName, setUserName] = useState('')
   const [repoName, setRepoName] = useState('')
+  const [fetching, setFetching] = useState(false)
   
   useEffect(()=> {
     
@@ -43,7 +44,7 @@ function App() {
 
   return (
     <div>
-      <Landing url={url} setSession={setSession} setMessages={setMessages}/>
+      <Landing setUrl={setUrl} url={url} setSession={setSession} setMessages={setMessages} setFetching={setFetching}/>
       {session && 
         <div>
           <h2>Working on {repoName} by {userName}</h2>

@@ -151,7 +151,7 @@ describe('POST /create-session', () => {
       const response = await supertest(app.default)
         .post('/create-session')
         .send(requestBody);
-      //console.log('response in test:', response)
+        
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('messages');
       expect(response.body).toHaveProperty('url');
