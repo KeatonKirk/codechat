@@ -19,13 +19,15 @@ function LandingPage(props){
     async function onClick(){
         // send the url to the server
         // update state
-
+        const apiUrl = process.env.REACT_APP_API_URL
         console.log('grabbing url from state:', url)
         const body = {
             url: url
         }
+
+        props.setFetching(true)
         try {
-            const response = await fetch('http://localhost:5000/create-session', {
+            const response = await fetch(`${apiUrl}/create-session`, {
                     method: "POST",
                     credentials: 'include',
                     mode: 'cors',
@@ -43,6 +45,7 @@ function LandingPage(props){
             props.setMessages(responseData.messages)
             props.setSession(true)
             props.setUrl(responseData.url)
+            props.setFetching(false)
         } catch(error){
             console.log('repo input error:', error)
         }
@@ -71,8 +74,14 @@ function LandingPage(props){
                 fullWidth
                 className="input-field"
                 onChange={onChange}
+                onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !props.fetching) {
+                        e.preventDefault(); 
+                        onClick(); 
+                    }
+                }}
             />
-            <Button onClick={onClick} variant="contained" color="primary" className="send-button">
+            <Button disabled={props.fetching} onClick={onClick} variant="contained" color="primary" className="send-button">
                 Submit
             </Button>
             </>

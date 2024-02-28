@@ -5,7 +5,8 @@
 }
 
 .chat-body {
-    height: 400px;
+    min-height: 400px;
+    max-height: 600px;
     overflow: auto;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -25,4 +26,5 @@
 
 .send-button {
     white-space: nowrap;
+    max-height: 55px
 }

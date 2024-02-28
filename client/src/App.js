@@ -44,11 +44,10 @@ function App() {
 
   return (
     <div>
-      <Landing setUrl={setUrl} url={url} setSession={setSession} setMessages={setMessages} setFetching={setFetching}/>
+      <Landing  setUrl={setUrl} url={url} setSession={setSession} setMessages={setMessages} setFetching={setFetching}/>
       {session && 
         <div>
-          <h2>Working on {repoName} by {userName}</h2>
-          <ChatWindow setMessages={setMessages} messages={messages}/>
+          <ChatWindow userName={userName} repoName={repoName} fetching={fetching} setMessages={setMessages} messages={messages}/>
         </div>
         }
     </div>

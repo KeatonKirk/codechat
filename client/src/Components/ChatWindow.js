@@ -63,77 +63,104 @@ function ChatWindow(props) {
     
             const responseData = await response.json()
             console.log('data back from send message attempt:', responseData)
-            setMessage('')
             props.setMessages(responseData)
         } catch (error) {
             console.log('error sending message:', error)
         }
         setTyping(false)
     }
-    //console.log('messages from parent:', props.messages)
 
     useEffect(()=>{
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     },[props.messages])
-    return(
-        <div className='chat-window'>
-            <div className='chat-body'>
-                {
-                    props.messages.map((msg, index) => {
-                        const messageText = msg.content[0].text.value
-                        //console.log('chat window, individual msg:', msg.content[0].text)
-                        const position = msg.role === 'user' ? 'right' : 'left';
-                        const title = msg.role === 'user' ? 'you' : 'CodeChat'
-                        return(
-                            <MessageBox
-                            title ={title}
-                            key={index}
-                            position={position}
-                            type={'text'}
-                            text={
-                                <ReactMarkdown children={messageText} />
-                            }
-                            margin='10px'
-                            />
-
-                        )
-                    })
-            
-                }
-                { typing &&
-                    <MessageBox
-                    title = 'CodeChat'
-                    position='left'
-                    type={'text'}
-                    text={
+    return (
+        <>
+            {props.fetching ? (
+                <>
+                    <Skeleton variant="text" width="40%" height={50} style={{ marginBottom: 6 }} />
+                    <div className='chat-window'>
                         <div>
-                            <Skeleton animation="wave" />
-                            <Skeleton animation="wave" />
-
+                            <div>
+                                <Skeleton variant="rectangular" width="80%" height={60} style={{ marginBottom: 6 }} />
+                            </div>
+                            <div >
+                                <Skeleton variant="rectangular" width="80%" height={60} style={{ marginBottom: 6 }} />
+                            </div>
+                            <div >
+                                <Skeleton variant="rectangular" width="80%" height={60} style={{ marginBottom: 6 }} />
+                            </div>
+                            <div >
+                                <Skeleton variant="rectangular" width="80%" height={60} style={{ marginBottom: 6 }} />
+                            </div>
                         </div>
-                    }
-                    margin='10px'
-                    />
+                    </div>
+                </>
 
-                }
-                <div ref={chatEndRef} />
-            </div>
-            <div className="input-container">
-                <TextField
-                    id="outlined-basic-emai"
-                    label="ask a question"
-                    fullWidth
-                    className="input-field"
-                    value={message}
-                    onChange={onChange}
-                />
-                <Button onClick={onClick} variant="contained" color="primary" className="send-button">
-                    Send
-                </Button>
-            </div>
-
-        </div>
-    )
+            ) : (
+                <>
+                <h2>Working on {props.repoName} by {props.userName}</h2>
+                <div className='chat-window'>
+                    <div className='chat-body'>
+                        {
+                            props.messages.map((msg, index) => {
+                                const messageText = msg.content[0].text.value;
+                                const position = msg.role === 'user' ? 'right' : 'left';
+                                const title = msg.role === 'user' ? 'You' : 'CodeChat';
+                                return (
+                                    <MessageBox
+                                        title={title}
+                                        key={index}
+                                        position={position}
+                                        type={'text'}
+                                        text={<ReactMarkdown children={messageText} />}
+                                        margin='10px'
+                                    />
+                                );
+                            })
+                        }
+                        { typing && (
+                            <MessageBox
+                                title='CodeChat'
+                                position='left'
+                                type={'text'}
+                                text={
+                                    <div>
+                                        <Skeleton animation="wave" />
+                                        <Skeleton animation="wave" />
+                                    </div>
+                                }
+                                margin='10px'
+                            />
+                        )}
+                        <div ref={chatEndRef} />
+                    </div>
+                    <div className="input-container">
+                        <TextField
+                            label="ask a question"
+                            fullWidth
+                            className="input-field"
+                            maxRows={6}
+                            multiline
+                            value={message}
+                            onChange={onChange}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !typing) {
+                                    e.preventDefault(); 
+                                    onClick(); 
+                                }
+                            }}
+                        />
+                        <Button disabled={typing} onClick={onClick} variant="contained" color="primary" className="send-button">
+                            Send
+                        </Button>
+                    </div>
+                    
+                    </div>
+                </>
+            )}
+        </>
+    );
+    
 }
 
 export default ChatWindow
